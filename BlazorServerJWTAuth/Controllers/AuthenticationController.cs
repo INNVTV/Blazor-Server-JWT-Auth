@@ -24,7 +24,7 @@ namespace BlazorServerJWTAuth.Controllers
         }
 
         [Route("refresh")]
-        public IActionResult Refresh(string jwtToken, string redirectUrl)
+        public IActionResult Refresh(string refreshToken, string redirectUrl)
         {
             /*
             HttpContext.Response.Cookies.Append(
@@ -35,6 +35,20 @@ namespace BlazorServerJWTAuth.Controllers
 
 
             return LocalRedirect(redirectUrl);
+        }
+
+        [Route("signout")]
+        public IActionResult Signout()
+        {
+            /*
+            HttpContext.Response.Cookies.Append(
+                    CookieRequestCultureProvider.DefaultCookieName,
+                    CookieRequestCultureProvider.MakeCookieValue(
+                        new RequestCulture(culture)));
+            */
+
+
+            return LocalRedirect("signout");
         }
     }
 }
