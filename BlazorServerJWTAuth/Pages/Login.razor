@@ -1,0 +1,62 @@
+﻿@page "/login"
+@layout PublicLayout
+@inject IHttpClientFactory ClientFactory
+
+<div class="form-group col-xl-4 offset-xl-4 col-lg-4 offset-lg-4 col-md-6 offset-md-3 col-sm-12">
+
+    <h2>Sign In</h2>
+
+    <b class="text-danger">@errorMessage</b>
+
+    <div class="form-group">
+        <label class="control-label">Username/Email</label>
+        <input class="form-control" @bind="userName" placeholder="Username or Email Address" />
+    </div>
+
+    <div class="form-group">
+        <label class="control-label">Password</label>
+        <input type="password" class="form-control" @bind="password" placeholder="Password" />
+    </div>
+
+    <div class="form-group">
+        <button @onclick="Submit" class="btn btn-dark btn-block btn-lg">Sign In</button>
+    </div>
+
+    <div class="form-group">
+        <a href="password/forgot" style="color:darkgrey">Forgot your password?</a>
+        <br />
+        <!-- Link to register or request an account. Can be it's own service.
+        <a href="">Request an account</a>
+        <br />-->
+    </div>
+
+</div>
+
+@code
+{
+    string userName { get; set; }
+    string password { get; set; }
+
+    string errorMessage { get; set; }
+    string jwtToken { get; set; }
+    string refreshToken { get; set; }
+
+    private async void Submit()
+    {
+        var httpClient = ClientFactory.CreateClient();
+        var authClient = new Services.PlatformIdentityService.AuthenticationClient("https://localhost:59899", httpClient);
+        var result = await authClient.AuthenticateUserAsync(userName, password);
+
+        if(result.IsSuccess)
+        {
+            errorMessage = null;
+            jwtToken = result.JwtToken;
+            refreshToken = result.RefreshToken;
+        }
+        else
+        {
+            errorMessage = result.Message;
+            StateHasChanged();
+        }
+    }
+}
