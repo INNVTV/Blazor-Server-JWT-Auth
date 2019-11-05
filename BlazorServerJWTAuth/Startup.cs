@@ -65,6 +65,12 @@ namespace BlazorServerJWTAuth
 
             app.UseRouting();
 
+            #region For JWT Authentication
+
+            app.UseMvcWithDefaultRoute(); //<--For controllers
+
+            #endregion
+
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapBlazorHub();
