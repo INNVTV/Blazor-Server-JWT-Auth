@@ -6,17 +6,12 @@
 </div>
 
 <div class="main">
-    <div class="top-row px-4">
-        <a href="https://docs.microsoft.com/en-us/aspnet/" target="_blank">About</a>
-    </div>
-
     <div class="content px-4">
         @Body
     </div>
 </div>
 
 @code{
-
     
     protected override async Task OnInitializedAsync()
     {
@@ -24,6 +19,7 @@
         UserIdentity.Email = "test@test.com" + Guid.NewGuid();
         UserIdentity.UserName = Guid.NewGuid().ToString();
         UserIdentity.Roles.Add("Admin");
+        UserIdentity.Roles.Add("User");
 
         var isAuthenticated = UserIdentity.IsAuthenticated;
 

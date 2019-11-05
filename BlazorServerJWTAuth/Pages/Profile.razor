@@ -2,8 +2,16 @@
 
 <h3>Profile</h3>
 
-<p>Username: @UserIdentity.UserName</p>
+<p><b>Username:</b> @UserIdentity.UserName</p>
+<p><b>Email:</b> @UserIdentity.Email</p>
+<p><b>Roles:</b> @String.Join(",",UserIdentity.Roles)</p>
+<button @onclick="Signout">Signout</button>
 
 @code {
+
+    private void Signout()
+    {
+
+    }
 
 }
