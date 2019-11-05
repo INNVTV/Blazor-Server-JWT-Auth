@@ -29,6 +29,9 @@ namespace BlazorServerJWTAuth
             services.AddRazorPages();
             services.AddServerSideBlazor();
 
+            Models.Configuration.Settings Settings = new Models.Configuration.Settings(Configuration);
+            services.AddSingleton<Models.Configuration.Settings>(Settings);
+
             #region For JWT Authentication
 
             // Add IHttpClientFactory to DI
