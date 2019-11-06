@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using BlazorServerJWTAuth.Models.Authentication;
+using BlazorServerJWTAuth.Authentication.Models;
 
 namespace BlazorServerJWTAuth
 {
@@ -44,8 +44,9 @@ namespace BlazorServerJWTAuth
             services.AddScoped<UserIdentity>();
             //services.AddScoped<StateManager>();
 
+            // For Controllers & controller routes to work
             services.AddMvc(options => options.EnableEndpointRouting = false)
-                .SetCompatibilityVersion(Microsoft.AspNetCore.Mvc.CompatibilityVersion.Version_3_0); //<-- For Controllers/Controller routes to work
+                .SetCompatibilityVersion(Microsoft.AspNetCore.Mvc.CompatibilityVersion.Version_3_0);
 
             #endregion
         }
@@ -71,7 +72,7 @@ namespace BlazorServerJWTAuth
 
             #region For JWT Authentication
 
-            app.UseMvcWithDefaultRoute(); //<--For controllers
+            app.UseMvcWithDefaultRoute(); //<--For controller routes
 
             #endregion
 

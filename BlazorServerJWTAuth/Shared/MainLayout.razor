@@ -1,5 +1,11 @@
 ﻿@inherits LayoutComponentBase
+
+@using Microsoft.AspNetCore.Http
+@using Authentication.Helpers
+
 @inject NavigationManager NavigationManager
+@inject Models.Configuration.Settings Settings
+@inject IHttpContextAccessor  HttpContextAccesor
 
 <div class="sidebar">
     <NavMenu />
@@ -15,16 +21,47 @@
 
     protected override async Task OnInitializedAsync()
     {
+        //Dicpose of UserIdentity
+        UserIdentity.Dispose();
 
-        UserIdentity.Login(
-            Guid.NewGuid().ToString(),
-            Guid.NewGuid().ToString(),
-            "test@test.com" + Guid.NewGuid(),
-            new List<string> { "Admin", "User" });
-            
+        // 1. Check for JWT token in cookies
+        string jwtToken = String.Empty;
+        HttpContextAccesor.HttpContext.Request.Cookies.TryGetValue(Settings.JWTCookieName, out jwtToken);
 
-        //NavigationManager.NavigateTo("/login", forceLoad: true);
+        if (!String.IsNullOrEmpty(jwtToken))
+        {
+            var jwtValidationResults = new DecodeAndValidateJwtTokenResults();
+            jwtValidationResults = Authentication.Helpers.DecodeAndValidate.JwtToken(jwtToken, Settings.PublicKeyXmlString, Settings.JwtAudience, Settings.JwtIssuer);
+
+            if(jwtValidationResults.isValid)
+            {
+                // 1a. Check if we need to refresh based on expiration time and next refresh check
+                if(jwtValidationResults.ExpirationHours <= Settings.RefreshSessionHours)
+                {
+
+                }
+
+                // 1b. Assign cookie data to UserIdentity and continue to single page application:
+            }
+            else if(jwtValidationResults.isExpired)
+            {
+
+            }
+            else
+            {
+                // 2. Send user to login page:
+                NavigationManager.NavigateTo("/login", forceLoad: true);
+            }
+
+
+
+        }
+        else
+        {
+            // 2. Send user to login page:
+            NavigationManager.NavigateTo("/login", forceLoad: true);
+        }
+
     }
-
 
 }

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace BlazorServerJWTAuth.Models.Authentication
+namespace BlazorServerJWTAuth.Authentication.Models
 {
 
     /* NOTES:
@@ -20,15 +20,24 @@ namespace BlazorServerJWTAuth.Models.Authentication
     *     This ensures that you do not refresh a user that has not properly signed in.
     */
 
-    public class UserIdentity : IDisposable 
+    public class UserIdentity : IDisposable
     {
+        private double SessionHours {get; set;}
+        public string Id { get; private set; }
+        public string UserName { get; private set; }
+        public string Email { get; private set; }
+        public bool IsAuthenticated { get; private set; }
+        public List<string> Roles { get; private set; }
+
+
         public UserIdentity()
         {
             IsAuthenticated = false;
             Roles = new List<string>();
+            SessionHours = 0;
         }
 
-        public void Login(string id, string userName, string email, List<string> roles)
+        public void Login(string id, string userName, string email, List<string> roles, double sessionHours)
         {
             if(!IsAuthenticated)
             {
@@ -38,6 +47,8 @@ namespace BlazorServerJWTAuth.Models.Authentication
                 Roles = roles;
 
                 IsAuthenticated = true;
+
+                SessionHours = sessionHours;
                 KeepSession();
             }
         }
@@ -64,11 +75,7 @@ namespace BlazorServerJWTAuth.Models.Authentication
             Dispose();
         }
 
-        public string Id { get; private set; }
-        public string UserName { get; private set; }
-        public string Email { get; private set; }
-        public bool IsAuthenticated { get; private set; }
-        public List<string> Roles { get; private set; }
+
 
         private async void KeepSession()
         {
@@ -76,9 +83,13 @@ namespace BlazorServerJWTAuth.Models.Authentication
 
             while(IsAuthenticated)
             {
-                await Task.Delay(9000);
-                count++;
-                Console.WriteLine($"({count}) id:({Id}) Checking refresh token...");
+                await Task.Delay(Convert.ToInt32(SessionHours * 60 * 60 * 1000));
+
+                if(IsAuthenticated) //<-- Additional check in case disposal or signout occurs during delay
+                {
+                    count++;
+                    Console.WriteLine($"({count}) id:({Id}) Checking refresh token...");
+                }  
             }
         }
 
