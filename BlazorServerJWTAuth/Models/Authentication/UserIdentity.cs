@@ -5,6 +5,21 @@ using System.Threading.Tasks;
 
 namespace BlazorServerJWTAuth.Models.Authentication
 {
+
+    /* NOTES:
+    *
+    *  1. It's important to implement IDisposable.
+    *     The DI will need to dispose of UserIdentity properly.
+    *     Especially when server pre-rendering is turned on which may instantiate multple instances.
+    *  
+    *  2. The Login method only runs if the instance is not already authenticated.
+    *     This ensures that KeepSession() is not run multiple times on the same instance.
+    *     If you need to log a user back in make sure they are signed out first, otherwise get a refresh token
+    *     
+    *  3. The Refresh method only runs if the instance is  authenticated.
+    *     This ensures that you do not refresh a user that has not properly signed in.
+    */
+
     public class UserIdentity : IDisposable 
     {
         public UserIdentity()
@@ -15,21 +30,28 @@ namespace BlazorServerJWTAuth.Models.Authentication
 
         public void Login(string id, string userName, string email, List<string> roles)
         {
-            Id = id;
-            UserName = userName;
-            Email = email;
-            Roles = roles;
+            if(!IsAuthenticated)
+            {
+                Id = id;
+                UserName = userName;
+                Email = email;
+                Roles = roles;
 
-            IsAuthenticated = true;
-            KeepSession();
+                IsAuthenticated = true;
+                KeepSession();
+            }
         }
 
         public void Refresh(string id, string userName, string email, List<string> roles)
         {
-            Id = id;
-            UserName = userName;
-            Email = email;
-            Roles = roles;
+            if(IsAuthenticated)
+            {
+                Id = id;
+                UserName = userName;
+                Email = email;
+                Roles = roles;
+            }
+
         }
 
         public void Logout()
