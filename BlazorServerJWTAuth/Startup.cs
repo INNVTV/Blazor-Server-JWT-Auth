@@ -42,6 +42,7 @@ namespace BlazorServerJWTAuth
 
             // Add single scoped UserIdentity object to DI
             services.AddScoped<UserIdentity>();
+            //services.AddScoped<StateManager>();
 
             services.AddMvc(options => options.EnableEndpointRouting = false)
                 .SetCompatibilityVersion(Microsoft.AspNetCore.Mvc.CompatibilityVersion.Version_3_0); //<-- For Controllers/Controller routes to work

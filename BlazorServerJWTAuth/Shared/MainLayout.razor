@@ -12,18 +12,19 @@
 </div>
 
 @code{
-    
+
     protected override async Task OnInitializedAsync()
     {
-        // @inject Models.Authentication.UserIdentity UserIdentity set in _Imports.razor
-        UserIdentity.Email = "test@test.com" + Guid.NewGuid();
-        UserIdentity.UserName = Guid.NewGuid().ToString();
-        UserIdentity.Roles.Add("Admin");
-        UserIdentity.Roles.Add("User");
 
-        var isAuthenticated = UserIdentity.IsAuthenticated;
+        UserIdentity.Login(
+            Guid.NewGuid().ToString(),
+            Guid.NewGuid().ToString(),
+            "test@test.com" + Guid.NewGuid(),
+            new List<string> { "Admin", "User" });
+            
 
         //NavigationManager.NavigateTo("/login", forceLoad: true);
     }
+
 
 }
