@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace BlazorServerJWTAuth.Authentication.Models
@@ -23,6 +24,7 @@ namespace BlazorServerJWTAuth.Authentication.Models
     public class UserIdentity : IDisposable
     {
         private double SessionHours {get; set;}
+        public string BearerToken { get; private set; }
         public string Id { get; private set; }
         public string UserName { get; private set; }
         public string Email { get; private set; }
@@ -37,14 +39,16 @@ namespace BlazorServerJWTAuth.Authentication.Models
             SessionHours = 0;
         }
 
-        public void Login(string id, string userName, string email, List<string> roles, double sessionHours)
+        public void Login(string bearerToken, IEnumerable<Claim> claims, double sessionHours)
         {
-            if(!IsAuthenticated)
+
+            if (!IsAuthenticated)
             {
-                Id = id;
-                UserName = userName;
-                Email = email;
-                Roles = roles;
+                BearerToken = bearerToken;
+                Id = claims.FirstOrDefault(c => c.Type.ToLower() == "id").Value.ToString();
+                UserName = claims.FirstOrDefault(c => c.Type.ToLower() == "username").Value.ToString();
+                Email = claims.FirstOrDefault(c => c.Type.ToLower() == "email").Value.ToString();
+                Roles = claims.ToList().Where(c => c.Type.ToLower() == "role").Select(r => r.Value).ToList();
 
                 IsAuthenticated = true;
 
@@ -53,11 +57,11 @@ namespace BlazorServerJWTAuth.Authentication.Models
             }
         }
 
-        public void Refresh(string id, string userName, string email, List<string> roles)
+        public void Refresh(string bearerToken, string userName, string email, List<string> roles)
         {
             if(IsAuthenticated)
             {
-                Id = id;
+                BearerToken = bearerToken;
                 UserName = userName;
                 Email = email;
                 Roles = roles;
@@ -67,6 +71,7 @@ namespace BlazorServerJWTAuth.Authentication.Models
 
         public void Logout()
         {
+            BearerToken = String.Empty;
             Id = String.Empty;
             UserName = String.Empty;
             Email = String.Empty;

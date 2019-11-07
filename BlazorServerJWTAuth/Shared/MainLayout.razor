@@ -42,10 +42,13 @@
                 }
 
                 // 1b. Assign cookie data to UserIdentity and continue to single page application:
+                UserIdentity.Login(jwtToken, jwtValidationResults.ClaimsPrincipal.Claims, Settings.RefreshSessionHours);
+
+                
             }
             else if(jwtValidationResults.isExpired)
             {
-
+                
             }
             else
             {
