@@ -1,5 +1,6 @@
 ﻿@page "/login"
 @layout PublicLayout
+
 @inject IHttpClientFactory ClientFactory
 @inject NavigationManager NavigationManager
 
@@ -54,14 +55,12 @@
             jwtToken = result.JwtToken;
             refreshToken = result.RefreshToken;
 
-            //Pass results to controller to set cookies
-            var uri = new Uri(NavigationManager.Uri)
-            .GetComponents(UriComponents.PathAndQuery, UriFormat.Unescaped);
-
             var query = $"?jwtToken={Uri.EscapeDataString(jwtToken)}&refreshToken={Uri.EscapeDataString(refreshToken)}&" +
-                $"redirectUrl={Uri.EscapeDataString(uri)}";
+                //$"redirectUrl={Uri.EscapeDataString(uri)}";
+                $"redirectUrl={Uri.EscapeDataString("/")}";
 
-            NavigationManager.NavigateTo("/authentication/login" + query, forceLoad: true);
+            NavigationManager.NavigateTo("/authentication/setcookies" + query, forceLoad: true);
+
         }
         else
         {
