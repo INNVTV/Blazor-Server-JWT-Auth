@@ -47,8 +47,8 @@ namespace BlazorServerJWTAuth.Authentication.Models
                 BearerToken = bearerToken;
                 Id = claims.FirstOrDefault(c => c.Type.ToLower() == "id").Value.ToString();
                 UserName = claims.FirstOrDefault(c => c.Type.ToLower() == "username").Value.ToString();
-                Email = claims.FirstOrDefault(c => c.Type.ToLower() == "email").Value.ToString();
-                Roles = claims.ToList().Where(c => c.Type.ToLower() == "role").Select(r => r.Value).ToList();
+                Email = claims.FirstOrDefault(c => c.Type.ToLower() == "emailaddress").Value.ToString();
+                Roles = claims.FirstOrDefault(c => c.Type.ToLower() == "platform-roles").Value.Split(",").ToList();
 
                 IsAuthenticated = true;
 

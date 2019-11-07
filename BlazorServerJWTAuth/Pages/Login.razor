@@ -1,6 +1,7 @@
 ﻿@page "/login"
 @layout PublicLayout
 @inject IHttpClientFactory ClientFactory
+@inject NavigationManager NavigationManager
 
 <div class="form-group col-xl-4 offset-xl-4 col-lg-4 offset-lg-4 col-md-6 offset-md-3 col-sm-12">
 
@@ -44,7 +45,7 @@
     private async void Submit()
     {
         var httpClient = ClientFactory.CreateClient();
-        var authClient = new Services.PlatformIdentityService.AuthenticationClient("https://localhost:59899", httpClient);
+        var authClient = new Services.PlatformIdentityService.AuthenticationClient(Settings.IdentityServiceUri, httpClient);
         var result = await authClient.AuthenticateUserAsync(userName, password);
 
         if(result.IsSuccess)
@@ -52,6 +53,15 @@
             errorMessage = null;
             jwtToken = result.JwtToken;
             refreshToken = result.RefreshToken;
+
+            //Pass results to controller to set cookies
+            var uri = new Uri(NavigationManager.Uri)
+            .GetComponents(UriComponents.PathAndQuery, UriFormat.Unescaped);
+
+            var query = $"?jwtToken={Uri.EscapeDataString(jwtToken)}&refreshToken={Uri.EscapeDataString(refreshToken)}&" +
+                $"redirectUrl={Uri.EscapeDataString(uri)}";
+
+            NavigationManager.NavigateTo("/authentication/login" + query, forceLoad: true);
         }
         else
         {

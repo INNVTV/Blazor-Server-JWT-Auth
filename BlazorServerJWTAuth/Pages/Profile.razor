@@ -1,10 +1,11 @@
 ﻿@page "/profile"
 
-<h3>Profile</h3>
+<h1>Profile</h1>
 
+<p><b>Id:</b> @UserIdentity.Id</p>
 <p><b>Username:</b> @UserIdentity.UserName</p>
 <p><b>Email:</b> @UserIdentity.Email</p>
-<p><b>Roles:</b> @String.Join(",", UserIdentity.Roles)</p>
+<p><b>Roles:</b> @String.Join(", ", UserIdentity.Roles)</p>
 @if (UserIdentity.IsAuthenticated)
 {
     <button @onclick="Signout">Signout</button>
