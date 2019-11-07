@@ -25,7 +25,7 @@
     </div>
 
     <div class="form-group">
-        <a href="#" style="color:darkgrey">Forgot your password?</a>
+        <a style="color:darkgrey">Forgot your password?</a>
     </div>
 
 </div>
@@ -52,7 +52,6 @@
             refreshToken = result.RefreshToken;
 
             var query = $"?jwtToken={Uri.EscapeDataString(jwtToken)}&refreshToken={Uri.EscapeDataString(refreshToken)}&" +
-                //$"redirectUrl={Uri.EscapeDataString(uri)}";
                 $"redirectUrl={Uri.EscapeDataString("/")}";
 
             NavigationManager.NavigateTo("/authentication/setcookies" + query, forceLoad: true);

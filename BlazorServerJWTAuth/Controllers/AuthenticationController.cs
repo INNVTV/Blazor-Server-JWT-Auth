@@ -47,7 +47,7 @@ namespace BlazorServerJWTAuth.Controllers
             return LocalRedirect(redirectUrl);
         }
 
-        [Route("RefreshToken")]
+        [Route("RefreshCookies")]
         public IActionResult RefreshToken(string refreshToken, string redirectUrl)
         {
             /*

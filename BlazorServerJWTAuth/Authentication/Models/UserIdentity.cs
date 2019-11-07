@@ -57,18 +57,6 @@ namespace BlazorServerJWTAuth.Authentication.Models
             }
         }
 
-        public void Refresh(string bearerToken, string userName, string email, List<string> roles)
-        {
-            if(IsAuthenticated)
-            {
-                BearerToken = bearerToken;
-                UserName = userName;
-                Email = email;
-                Roles = roles;
-            }
-
-        }
-
         private async void KeepSession()
         {
             int count = 0;
