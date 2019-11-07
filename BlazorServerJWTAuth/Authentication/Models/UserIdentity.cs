@@ -69,19 +69,6 @@ namespace BlazorServerJWTAuth.Authentication.Models
 
         }
 
-        public void Logout()
-        {
-            BearerToken = String.Empty;
-            Id = String.Empty;
-            UserName = String.Empty;
-            Email = String.Empty;
-            Roles = new List<string>();
-
-            Dispose();
-        }
-
-
-
         private async void KeepSession()
         {
             int count = 0;
@@ -100,6 +87,12 @@ namespace BlazorServerJWTAuth.Authentication.Models
 
         public void Dispose()
         {
+            BearerToken = String.Empty;
+            Id = String.Empty;
+            UserName = String.Empty;
+            Email = String.Empty;
+            Roles = new List<string>();
+
             IsAuthenticated = false;
         }
     }

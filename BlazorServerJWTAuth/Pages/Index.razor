@@ -1,10 +1,7 @@
 ﻿@page "/"
 
+<h1>Hello @UserIdentity.UserName!</h1>
 
-<h1>Hello!</h1>
-
-<!-- We have -inject Models.Authentication.UserIdentity UserIdentity set in the _Imports.razor file -->
-<p>The email of the user identity is @UserIdentity.Email</p>
 
 @if (UserIdentity.Roles.Contains("Admin"))
 {
@@ -13,9 +10,4 @@
 else
 {
     <b>User is not an Admin</b>
-}
-
-
-@code{
-    
 }

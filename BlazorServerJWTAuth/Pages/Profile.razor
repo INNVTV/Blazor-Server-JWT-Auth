@@ -6,22 +6,15 @@
 <p><b>Username:</b> @UserIdentity.UserName</p>
 <p><b>Email:</b> @UserIdentity.Email</p>
 <p><b>Roles:</b> @String.Join(", ", UserIdentity.Roles)</p>
-@if (UserIdentity.IsAuthenticated)
-{
-    <button @onclick="Signout">Signout</button>
-}
-else
-{
-    <button @onclick="SignIn">SignIn</button>
-}
 
-<button @onclick="Refresh">Refresh</button>
+<button class="btn btn-dark" @onclick="Signout">Signout</button>
+<button class="btn btn-dark" @onclick="Refresh">Refresh</button>
+
 @code {
 
     private void Signout()
     {
-        UserIdentity.Logout();
-
+        NavigationManager.NavigateTo("/authentication/destroycookies", forceLoad: true);
     }
     private void Refresh()
     {
@@ -32,17 +25,6 @@ else
            "test@test.com" + Guid.NewGuid(),
            new List<string> { "Admin", "User" });
 
-    }
-    private void SignIn()
-    {
-        /*
-        UserIdentity.Login(
-           Guid.NewGuid().ToString(),
-           Guid.NewGuid().ToString(),
-           "test@test.com" + Guid.NewGuid(),
-           new List<string> { "Admin", "User" },
-           Settings.RefreshSessionHours);
-           */
     }
 
 }

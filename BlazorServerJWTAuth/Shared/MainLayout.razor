@@ -3,8 +3,6 @@
 @using Microsoft.AspNetCore.Http
 @using Authentication.Helpers
 
-@inject NavigationManager NavigationManager
-@inject Models.Configuration.Settings Settings
 @inject IHttpContextAccessor  HttpContextAccesor
 
 <div class="sidebar">
@@ -49,11 +47,6 @@
             else if(jwtValidationResults.isExpired)
             {
                 // Attempt to refresh the token
-
-
-
-
-
 
             }
             else

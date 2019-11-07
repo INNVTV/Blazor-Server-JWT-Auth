@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BlazorServerJWTAuth.Controllers
@@ -21,11 +22,27 @@ namespace BlazorServerJWTAuth.Controllers
             
             HttpContext.Response.Cookies.Append(
                 _settings.JWTCookieName,
-                jwtToken);
+                jwtToken,
+                new CookieOptions()
+                {
+                    IsEssential = true,
+                    HttpOnly = true,
+                    Secure = true,
+                    Expires = DateTime.UtcNow.AddHours(_settings.CookieExpirationHours),
+                    SameSite = SameSiteMode.Strict
+                });
 
             HttpContext.Response.Cookies.Append(
                 _settings.RefreshTokenCookieName,
-                Authentication.Encryption.StringEncryption.EncryptString(refreshToken, _settings.RefreshTokenEncryptionPassPhrase));
+                Authentication.Encryption.StringEncryption.EncryptString(refreshToken, _settings.RefreshTokenEncryptionPassPhrase),
+                new CookieOptions()
+                {
+                    IsEssential = true,
+                    HttpOnly = true,
+                    Secure = true,
+                    Expires = DateTime.UtcNow.AddHours(_settings.CookieExpirationHours),
+                    SameSite = SameSiteMode.Strict
+                });
 
             return LocalRedirect(redirectUrl);
         }
@@ -50,7 +67,7 @@ namespace BlazorServerJWTAuth.Controllers
             HttpContext.Response.Cookies.Delete(_settings.JWTCookieName);
             HttpContext.Response.Cookies.Delete(_settings.RefreshTokenCookieName);
 
-            return LocalRedirect("/");
+            return LocalRedirect("/signedout");
         }
     }
 }
