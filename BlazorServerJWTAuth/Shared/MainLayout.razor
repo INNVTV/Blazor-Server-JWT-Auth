@@ -18,9 +18,10 @@
 
 @code{
 
+    private string loginUrl = "/login";
+
     protected override async Task OnInitializedAsync()
     {
-        var loginUrl = "/login";
 
         //Dicpose of UserIdentity
         UserIdentity.Dispose();
@@ -41,9 +42,11 @@
 
         if (jwtValidationResults.isValid)
         {
-            // Check if we need to refresh based on expiration time 
-            if (jwtValidationResults.ExpirationHours <= Settings.RefreshTokenHours)
+            // Check if our token will expire before next refresh check
+            if (jwtValidationResults.ExpirationHours <= Settings.SessionRefreshHours)
             {
+                #region Refresh Token
+
                 var refreshTokenEncrypted = String.Empty;
                 HttpContextAccesor.HttpContext.Request.Cookies.TryGetValue(Settings.RefreshTokenCookieName, out refreshTokenEncrypted);
                 var refreshToken = Authentication.Encryption.StringEncryption.DecryptString(refreshTokenEncrypted, Settings.RefreshTokenEncryptionPassPhrase);
@@ -66,15 +69,22 @@
 
                     NavigationManager.NavigateTo("/authentication/refreshcookies" + query, forceLoad: true);
                 }
+
+                #endregion
+
             }
 
             // Assign cookie data to UserIdentity and continue to single page application:
-            UserIdentity.Login(jwtToken, jwtValidationResults.ClaimsPrincipal.Claims, jwtValidationResults.ExpirationTime, Settings.RefreshSessionHours);
+            UserIdentity.Login(jwtToken, jwtValidationResults.ClaimsPrincipal.Claims, jwtValidationResults.ExpirationTime, Settings.SessionRefreshHours);
+
+            // Handle TokenRefreshRequired Event 
+            UserIdentity.TokenRefreshRequired += RefreshTokenEventHandler;
 
         }
         else if (jwtValidationResults.isExpired)
         {
-            
+            #region Refresh Token
+
             var refreshTokenEncrypted = String.Empty;
             HttpContextAccesor.HttpContext.Request.Cookies.TryGetValue(Settings.RefreshTokenCookieName, out refreshTokenEncrypted);
             var refreshToken = Authentication.Encryption.StringEncryption.DecryptString(refreshTokenEncrypted, Settings.RefreshTokenEncryptionPassPhrase);
@@ -104,11 +114,35 @@
                 NavigationManager.NavigateTo(loginUrl);
             }
 
+            #endregion
+
         }
         else
         {
             // Send user to login page:
             NavigationManager.NavigateTo(loginUrl);
         }
+
+    }
+
+    // If during this session the UserIdentity requires a refresh token we listen for the event and hard refresh the page using current URL
+    public async void RefreshTokenEventHandler(object sender, EventArgs args)
+    {
+        try
+        {
+            // We wrap this in a try/catch in case server pre-rendring is on.
+            // Initial pre-render step may throw an exception on NULL NavigationManager
+
+            Console.WriteLine("Handling refresh event from UserIdentity.");
+
+            var uri = new Uri(NavigationManager.Uri)
+                .GetComponents(UriComponents.PathAndQuery, UriFormat.Unescaped);
+
+            NavigationManager.NavigateTo(uri, forceLoad: true);
+        }catch
+        {
+
+        }
+
     }
 }

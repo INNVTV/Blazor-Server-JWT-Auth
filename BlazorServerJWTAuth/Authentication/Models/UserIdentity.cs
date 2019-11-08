@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 
 namespace BlazorServerJWTAuth.Authentication.Models
 {
+
     /* NOTES:
     *
     *  1. It's important to implement IDisposable.
@@ -23,6 +24,7 @@ namespace BlazorServerJWTAuth.Authentication.Models
 
     public class UserIdentity : IDisposable
     {
+        public event EventHandler TokenRefreshRequired;
         private double SessionRefreshHours {get; set;}
         private DateTime TokenExpirationTime { get; set; }
         public string BearerToken { get; private set; }
@@ -31,6 +33,7 @@ namespace BlazorServerJWTAuth.Authentication.Models
         public string Email { get; private set; }
         public bool IsAuthenticated { get; private set; }
         public List<string> Roles { get; private set; }
+
 
         public UserIdentity()
         {
@@ -68,10 +71,12 @@ namespace BlazorServerJWTAuth.Authentication.Models
                 {
                     Console.WriteLine("Checking if token refresh is required...");
 
+                    //Check to see if our JWT token is going to expire before the next session refresh
                     if(TokenExpirationTime <= DateTime.UtcNow.AddHours(SessionRefreshHours))
                     {
+                        // Send an event to MainLayout to refresh the page and generate a new JWT token using the RefreshToken
                         Console.WriteLine(" > Refresh required...");
-
+                        TokenRefreshRequired?.Invoke(this, EventArgs.Empty);
                     }
                     else
                     {
