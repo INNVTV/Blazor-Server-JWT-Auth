@@ -20,6 +20,8 @@
 
     protected override async Task OnInitializedAsync()
     {
+        var loginUrl = "/login";
+
         //Dicpose of UserIdentity
         UserIdentity.Dispose();
 
@@ -27,89 +29,86 @@
         string jwtToken = String.Empty;
         HttpContextAccesor.HttpContext.Request.Cookies.TryGetValue(Settings.JWTCookieName, out jwtToken);
 
-        if (!String.IsNullOrEmpty(jwtToken))
+        if (String.IsNullOrEmpty(jwtToken))
         {
-            var jwtValidationResults = new DecodeAndValidateJwtTokenResults();
-            jwtValidationResults = Authentication.Helpers.DecodeAndValidate.JwtToken(jwtToken, Settings.PublicKeyXmlString, Settings.JwtAudience, Settings.JwtIssuer);
+            // No Cookies with JWT Token Exist - Send user to login page:
+            NavigationManager.NavigateTo(loginUrl);
+        }
 
-            if (jwtValidationResults.isValid)
+        // Decode and validate JWT Token:
+        var jwtValidationResults = new DecodeAndValidateJwtTokenResults();
+        jwtValidationResults = Authentication.Helpers.DecodeAndValidate.JwtToken(jwtToken, Settings.PublicKeyXmlString, Settings.JwtAudience, Settings.JwtIssuer);
+
+        if (jwtValidationResults.isValid)
+        {
+            // Check if we need to refresh based on expiration time 
+            if (jwtValidationResults.ExpirationHours <= Settings.RefreshTokenHours)
             {
-                // 1a. Check if we need to refresh based on expiration time and next refresh check
-                if (jwtValidationResults.ExpirationHours <= Settings.RefreshSessionHours)
-                {
-                    var refreshTokenEncrypted = String.Empty;
-                    HttpContextAccesor.HttpContext.Request.Cookies.TryGetValue(Settings.RefreshTokenCookieName, out refreshTokenEncrypted);
-                    var refreshToken = Authentication.Encryption.StringEncryption.DecryptString(refreshTokenEncrypted, Settings.RefreshTokenEncryptionPassPhrase);
-
-                    // Attempt to refresh the token
-                    var httpClient = ClientFactory.CreateClient();
-                    var authClient = new Services.PlatformIdentityService.AuthenticationClient(Settings.IdentityServiceUri, httpClient);
-                    var result = await authClient.RefreshTokenAsync(refreshToken);
-
-                    if(result.IsSuccess)
-                    {
-                        jwtToken = result.JwtToken;
-                        refreshToken = result.RefreshToken;
-                        
-                        
-                        var uri = new Uri(NavigationManager.Uri)
-                            .GetComponents(UriComponents.PathAndQuery, UriFormat.Unescaped);
-
-                        var query = $"?jwtToken={Uri.EscapeDataString(jwtToken)}&refreshToken={Uri.EscapeDataString(refreshToken)}&" +
-                            $"redirectUrl={Uri.EscapeDataString(uri)}";
-
-                            NavigationManager.NavigateTo("/authentication/refreshcookies" + query, forceLoad: true);
-                    }
-                }
-
-                // 1b. Assign cookie data to UserIdentity and continue to single page application:
-                UserIdentity.Login(jwtToken, jwtValidationResults.ClaimsPrincipal.Claims, Settings.RefreshSessionHours);
-
-
-            }
-            else if (jwtValidationResults.isExpired)
-            {
-                // Attempt to refresh the token
                 var refreshTokenEncrypted = String.Empty;
-                    HttpContextAccesor.HttpContext.Request.Cookies.TryGetValue(Settings.RefreshTokenCookieName, out refreshTokenEncrypted);
-                    var refreshToken = Authentication.Encryption.StringEncryption.DecryptString(refreshTokenEncrypted, Settings.RefreshTokenEncryptionPassPhrase);
+                HttpContextAccesor.HttpContext.Request.Cookies.TryGetValue(Settings.RefreshTokenCookieName, out refreshTokenEncrypted);
+                var refreshToken = Authentication.Encryption.StringEncryption.DecryptString(refreshTokenEncrypted, Settings.RefreshTokenEncryptionPassPhrase);
 
-                    // Attempt to refresh the token
-                    var httpClient = ClientFactory.CreateClient();
-                    var authClient = new Services.PlatformIdentityService.AuthenticationClient(Settings.IdentityServiceUri, httpClient);
-                    var result = await authClient.RefreshTokenAsync(refreshToken);
+                // Attempt to refresh the token
+                var httpClient = ClientFactory.CreateClient();
+                var authClient = new Services.PlatformIdentityService.AuthenticationClient(Settings.IdentityServiceUri, httpClient);
+                var result = await authClient.RefreshTokenAsync(refreshToken);
 
-                    if(result.IsSuccess)
-                    {
-                        jwtToken = result.JwtToken;
-                        refreshToken = result.RefreshToken;
-                        
-                        
-                        var uri = new Uri(NavigationManager.Uri)
-                            .GetComponents(UriComponents.PathAndQuery, UriFormat.Unescaped);
+                if (result.IsSuccess)
+                {
+                    jwtToken = result.JwtToken;
+                    refreshToken = result.RefreshToken;
 
-                        var query = $"?jwtToken={Uri.EscapeDataString(jwtToken)}&refreshToken={Uri.EscapeDataString(refreshToken)}&" +
-                            $"redirectUrl={Uri.EscapeDataString(uri)}";
+                    var uri = new Uri(NavigationManager.Uri)
+                        .GetComponents(UriComponents.PathAndQuery, UriFormat.Unescaped);
 
-                            NavigationManager.NavigateTo("/authentication/refreshcookies" + query, forceLoad: true);
-                    }
+                    var query = $"?jwtToken={Uri.EscapeDataString(jwtToken)}&refreshToken={Uri.EscapeDataString(refreshToken)}&" +
+                        $"redirectUrl={Uri.EscapeDataString(uri)}";
 
+                    NavigationManager.NavigateTo("/authentication/refreshcookies" + query, forceLoad: true);
+                }
+            }
+
+            // Assign cookie data to UserIdentity and continue to single page application:
+            UserIdentity.Login(jwtToken, jwtValidationResults.ClaimsPrincipal.Claims, jwtValidationResults.ExpirationTime, Settings.RefreshSessionHours);
+
+        }
+        else if (jwtValidationResults.isExpired)
+        {
+            
+            var refreshTokenEncrypted = String.Empty;
+            HttpContextAccesor.HttpContext.Request.Cookies.TryGetValue(Settings.RefreshTokenCookieName, out refreshTokenEncrypted);
+            var refreshToken = Authentication.Encryption.StringEncryption.DecryptString(refreshTokenEncrypted, Settings.RefreshTokenEncryptionPassPhrase);
+
+            // Attempt to refresh the token
+            var httpClient = ClientFactory.CreateClient();
+            var authClient = new Services.PlatformIdentityService.AuthenticationClient(Settings.IdentityServiceUri, httpClient);
+            var result = await authClient.RefreshTokenAsync(refreshToken);
+
+            if (result.IsSuccess)
+            {
+                jwtToken = result.JwtToken;
+                refreshToken = result.RefreshToken;
+
+
+                var uri = new Uri(NavigationManager.Uri)
+                    .GetComponents(UriComponents.PathAndQuery, UriFormat.Unescaped);
+
+                var query = $"?jwtToken={Uri.EscapeDataString(jwtToken)}&refreshToken={Uri.EscapeDataString(refreshToken)}&" +
+                    $"redirectUrl={Uri.EscapeDataString(uri)}";
+
+                NavigationManager.NavigateTo("/authentication/refreshcookies" + query, forceLoad: true);
             }
             else
             {
-                // 2. Send user to login page:
-                NavigationManager.NavigateTo("/login", forceLoad: true);
+                // Send user to login page:
+                NavigationManager.NavigateTo(loginUrl);
             }
-
-
 
         }
         else
         {
-            // 2. Send user to login page:
-            NavigationManager.NavigateTo("/login", forceLoad: true);
+            // Send user to login page:
+            NavigationManager.NavigateTo(loginUrl);
         }
-
     }
-
 }

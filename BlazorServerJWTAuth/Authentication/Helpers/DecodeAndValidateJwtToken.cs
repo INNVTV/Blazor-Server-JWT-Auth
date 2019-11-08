@@ -76,6 +76,7 @@ namespace BlazorServerJWTAuth.Authentication.Helpers
                     isValid = true,
                     ClaimsPrincipal = claimsPrincipal,
                     SecurityToken = validatedToken,
+                    ExpirationTime = validatedToken.ValidTo,
                     ExpirationHours = (validatedToken.ValidTo - DateTime.UtcNow).TotalHours
                 };
                

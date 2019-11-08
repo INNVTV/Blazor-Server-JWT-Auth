@@ -4,9 +4,9 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 
+
 namespace BlazorServerJWTAuth.Authentication.Models
 {
-
     /* NOTES:
     *
     *  1. It's important to implement IDisposable.
@@ -23,7 +23,8 @@ namespace BlazorServerJWTAuth.Authentication.Models
 
     public class UserIdentity : IDisposable
     {
-        private double SessionHours {get; set;}
+        private double SessionRefreshHours {get; set;}
+        private DateTime TokenExpirationTime { get; set; }
         public string BearerToken { get; private set; }
         public string Id { get; private set; }
         public string UserName { get; private set; }
@@ -31,15 +32,14 @@ namespace BlazorServerJWTAuth.Authentication.Models
         public bool IsAuthenticated { get; private set; }
         public List<string> Roles { get; private set; }
 
-
         public UserIdentity()
         {
             IsAuthenticated = false;
             Roles = new List<string>();
-            SessionHours = 0;
+            SessionRefreshHours = 0;
         }
 
-        public void Login(string bearerToken, IEnumerable<Claim> claims, double sessionHours)
+        public void Login(string bearerToken, IEnumerable<Claim> claims, DateTime tokenExpirationTime,  double sessionRefreshHours)
         {
 
             if (!IsAuthenticated)
@@ -52,23 +52,31 @@ namespace BlazorServerJWTAuth.Authentication.Models
 
                 IsAuthenticated = true;
 
-                SessionHours = sessionHours;
+                TokenExpirationTime = tokenExpirationTime;
+                SessionRefreshHours = sessionRefreshHours;
                 KeepSession();
             }
         }
 
         private async void KeepSession()
         {
-            int count = 0;
-
             while(IsAuthenticated)
             {
-                await Task.Delay(Convert.ToInt32(SessionHours * 60 * 60 * 1000));
+                await Task.Delay(Convert.ToInt32(SessionRefreshHours * 60 * 60 * 1000));
 
                 if(IsAuthenticated) //<-- Additional check in case disposal or signout occurs during delay
                 {
-                    count++;
-                    Console.WriteLine($"({count}) id:({Id}) Checking refresh token...");
+                    Console.WriteLine("Checking if token refresh is required...");
+
+                    if(TokenExpirationTime <= DateTime.UtcNow.AddHours(SessionRefreshHours))
+                    {
+                        Console.WriteLine(" > Refresh required...");
+
+                    }
+                    else
+                    {
+                        Console.WriteLine(" > No refresh required...");
+                    }
                 }  
             }
         }

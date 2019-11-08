@@ -1,4 +1,5 @@
 ﻿using Microsoft.IdentityModel.Tokens;
+using System;
 using System.Security.Claims;
 
 namespace BlazorServerJWTAuth.Authentication.Helpers
@@ -16,6 +17,8 @@ namespace BlazorServerJWTAuth.Authentication.Helpers
         public bool isExpired { get; set; }
         public ClaimsPrincipal ClaimsPrincipal { get; set; }
         public SecurityToken SecurityToken { get; set; }
+        public DateTime ExpirationTime { get; set; }
         public double ExpirationHours { get; set; }
+        
     }
 }

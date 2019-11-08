@@ -21,6 +21,7 @@ namespace BlazorServerJWTAuth.Models.Configuration
             RefreshTokenCookieName = configuration.GetSection("RefreshTokenCookieName").Value;
             RefreshTokenEncryptionPassPhrase = configuration.GetSection("RefreshTokenEncryptionPassPhrase").Value;
             CookieExpirationHours = Convert.ToDouble(configuration.GetSection("CookieExpirationHours").Value);
+            RefreshTokenHours = Convert.ToDouble(configuration.GetSection("RefreshTokenHours").Value);
             RefreshSessionHours = Convert.ToDouble(configuration.GetSection("RefreshSessionHours").Value);
         }
 
@@ -33,6 +34,7 @@ namespace BlazorServerJWTAuth.Models.Configuration
         public string RefreshTokenCookieName { get; set; }
         public string RefreshTokenEncryptionPassPhrase { get; set; }
         public double CookieExpirationHours { get; set; }
+        public double RefreshTokenHours { get; set; }
         public double RefreshSessionHours { get; set; }
     }
 }

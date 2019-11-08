@@ -48,15 +48,36 @@ namespace BlazorServerJWTAuth.Controllers
         }
 
         [Route("RefreshCookies")]
-        public IActionResult RefreshToken(string refreshToken, string redirectUrl)
+        public IActionResult RefreshToken(string jwtToken, string refreshToken, string redirectUrl)
         {
-            /*
-            HttpContext.Response.Cookies.Append(
-                    CookieRequestCultureProvider.DefaultCookieName,
-                    CookieRequestCultureProvider.MakeCookieValue(
-                        new RequestCulture(culture)));
-            */
+            // Delete
+            HttpContext.Response.Cookies.Delete(_settings.JWTCookieName);
+            HttpContext.Response.Cookies.Delete(_settings.RefreshTokenCookieName);
 
+            // Reset
+            HttpContext.Response.Cookies.Append(
+                _settings.JWTCookieName,
+                jwtToken,
+                new CookieOptions()
+                {
+                    IsEssential = true,
+                    HttpOnly = true,
+                    Secure = true,
+                    Expires = DateTime.UtcNow.AddHours(_settings.CookieExpirationHours),
+                    SameSite = SameSiteMode.Strict
+                });
+
+            HttpContext.Response.Cookies.Append(
+                _settings.RefreshTokenCookieName,
+                Authentication.Encryption.StringEncryption.EncryptString(refreshToken, _settings.RefreshTokenEncryptionPassPhrase),
+                new CookieOptions()
+                {
+                    IsEssential = true,
+                    HttpOnly = true,
+                    Secure = true,
+                    Expires = DateTime.UtcNow.AddHours(_settings.CookieExpirationHours),
+                    SameSite = SameSiteMode.Strict
+                });
 
             return LocalRedirect(redirectUrl);
         }
